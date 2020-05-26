@@ -44,12 +44,17 @@ def run(params):
             os.makedirs(params.working_path)
 
         terms = TermCollection().fetch_with_filter("project", params.id_project)
-        terms_indexes = {term.id: i for i, term in enumerate(terms)}
+        if params.id_terms:
+            filtered_term_ids = [int(id_term) for id_term in params.id_terms.split(',')]
+            filtered_terms = [term for term in terms if term.id in filtered_term_ids]
+        else:
+            filtered_terms = terms
+        terms_indexes = {term.id: i for i, term in enumerate(filtered_terms)}
 
         # https://github.com/AlexeyAB/darknet#how-to-train-to-detect-your-custom-objects
         # Write obj.names
         with open(os.path.join(params.working_path, CLASSES_FILENAME), 'w') as f:
-            for term in terms:
+            for term in filtered_terms:
                 f.write(term.name + os.linesep)
 
         # Download images
@@ -61,6 +66,7 @@ def run(params):
         for image in images:
             annotations = AnnotationCollection()
             annotations.image = image.id
+            annotations.terms = [t.id for t in filtered_terms] if params.id_terms else None
             annotations.showWKT = True
             annotations.showTerm = True
             annotations.fetch()
@@ -80,6 +86,8 @@ if __name__ == '__main__':
     parser.add_argument('--cytomine_public_key', dest='public_key')
     parser.add_argument('--cytomine_private_key', dest="private_key")
     parser.add_argument('--id_project')
+    parser.add_argument('--id_terms',
+                        help="List of terms to use for dataset, separated by comma. If unset, all terms are used.")
     parser.add_argument('--working_path')
     params, _ = parser.parse_known_args(sys.argv[1:])
     run(params)
