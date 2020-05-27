@@ -1,0 +1,64 @@
+{
+  "name": "YOLO-model-builder-example-0",
+  "description": "Toy software to demonstrate how to get data from Cytomine to train YOLO.",
+  "inputs": [
+    {
+      "id": "cytomine_host",
+      "name": "Cytomine host",
+      "set-by-server": true,
+      "optional": false,
+      "type": "String"
+    },
+    {
+      "id": "cytomine_public_key",
+      "name": "Cytomine public key",
+      "set-by-server": true,
+      "optional": false,
+      "type": "String"
+    },
+    {
+      "id": "cytomine_private_key",
+      "name": "Cytomine private key",
+      "set-by-server": true,
+      "optional": false,
+      "type": "String"
+    },
+    {
+      "id": "cytomine_id_project",
+      "name": "Cytomine project ID",
+      "set-by-server": true,
+      "optional": false,
+      "type": "Number"
+    },
+    {
+      "id": "cytomine_id_software",
+      "name": "Cytomine software ID",
+      "set-by-server": true,
+      "optional": false,
+      "type": "Number"
+    },
+    {
+      "id": "working_path",
+      "name": "Working path",
+      "description": "The path on host machine where data is stored",
+      "optional": false,
+      "type": "String"
+    },
+    {
+      "id": "cytomine_id_terms",
+      "name": "Cytomine terms to consider",
+      "description": "The list of Cytomine term IDs (separated by comma) to consider in the dataset. If unset, all terms are used",
+      "optional": true,
+      "type": "String"
+    },
+    {
+      "id": "cytomine_id_tags_for_images",
+      "name": "Cytomine tags to consider for images",
+      "description": "The list of Cytomine tag IDs (separated by comma) that images must have to be used in dataset. If unset, all images in the project are used.",
+      "optional": true,
+      "type": "String"
+    }
+  ],
+
+  "schema-version": "cytomine-0.1"
+}
