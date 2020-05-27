@@ -58,7 +58,8 @@ def run(params):
                 f.write(term.name + os.linesep)
 
         # Download images
-        images = ImageInstanceCollection().fetch_with_filter("project", params.id_project)[:10]
+        image_tags = params.id_tags_for_images if params.id_tags_for_images else None
+        images = ImageInstanceCollection(tags=image_tags).fetch_with_filter("project", params.id_project)
         for image in images:
             image.dump(os.path.join(params.working_path, "{id}.png"), override=False)
 
@@ -88,6 +89,9 @@ if __name__ == '__main__':
     parser.add_argument('--id_project')
     parser.add_argument('--id_terms',
                         help="List of terms to use for dataset, separated by comma. If unset, all terms are used.")
+    parser.add_argument('--id_tags_for_images',
+                        help="List of tags (id), separated by comma, that images must have to be used in dataset. "
+                             "If unset, all images in the project are used.")
     parser.add_argument('--working_path')
     params, _ = parser.parse_known_args(sys.argv[1:])
     run(params)
