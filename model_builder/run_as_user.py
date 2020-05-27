@@ -20,4 +20,9 @@ if __name__ == '__main__':
     params, _ = parser.parse_known_args(sys.argv[1:])
 
     with Cytomine(host=params.cytomine_host, public_key=params.cytomine_public_key, private_key=params.cytomine_private_key) as cytomine:
-        preprocess(cytomine, params.working_path, params.cytomine_id_project, params.cytomine_id_terms, params.cytomine_id_tags_for_images)
+        result = preprocess(cytomine, params.working_path, params.cytomine_id_project, params.cytomine_id_terms, params.cytomine_id_tags_for_images)
+
+        classes_filename, image_filenames, annotation_filenames = result
+        print("The classes are in file: {}".format(classes_filename))
+        print("There are {} images".format(len(image_filenames)))
+        print("There are {} annotation files".format(len(annotation_filenames)))

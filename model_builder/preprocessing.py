@@ -1,8 +1,4 @@
 import os
-import sys
-from argparse import ArgumentParser
-
-from cytomine import Cytomine
 from cytomine.models import TermCollection, ImageInstanceCollection, AnnotationCollection
 from shapely import wkt
 from shapely.affinity import affine_transform
@@ -39,6 +35,18 @@ def geometry_to_yolo(geom, image_width, image_height):
 
 
 def preprocess(cytomine, working_path, id_project, id_terms=None, id_tags_for_images=None):
+    """
+    Get data from Cytomine in order to train YOLO.
+    :param cytomine: The Cytomine client
+    :param working_path: The path where files will be stored
+    :param id_project: The Cytomine project ID used to get data
+    :param id_terms: The Cytomine term IDS used to get data
+    :param id_tags_for_images: The Cytomine tags IDS associated to images used to get data
+    :return:
+        classes_filename: The name of the file with classes
+        image_filenames: A list of image filenames
+        annotation_filenames: A list of filenames with annotations in YOLO format
+    """
     if not os.path.exists(working_path):
         os.makedirs(working_path)
 
@@ -52,17 +60,21 @@ def preprocess(cytomine, working_path, id_project, id_terms=None, id_tags_for_im
 
     # https://github.com/AlexeyAB/darknet#how-to-train-to-detect-your-custom-objects
     # Write obj.names
-    with open(os.path.join(working_path, CLASSES_FILENAME), 'w') as f:
+    classes_filename = os.path.join(working_path, CLASSES_FILENAME)
+    with open(classes_filename, 'w') as f:
         for term in filtered_terms:
             f.write(term.name + os.linesep)
 
     # Download images
+    image_filenames = []
     image_tags = id_tags_for_images if id_tags_for_images else None
-    images = ImageInstanceCollection(tags=image_tags).fetch_with_filter("project", id_project)
+    images = ImageInstanceCollection(tags=image_tags).fetch_with_filter("project", id_project)[:20]
     for image in images:
         image.dump(os.path.join(working_path, "{id}.png"), override=False)
+        image_filenames.append(image.filename)
 
     # Create annotation files
+    annotation_filenames = []
     for image in images:
         annotations = AnnotationCollection()
         annotations.image = image.id
@@ -71,10 +83,14 @@ def preprocess(cytomine, working_path, id_project, id_terms=None, id_tags_for_im
         annotations.showTerm = True
         annotations.fetch()
 
-        with open(os.path.join(working_path, "{}.txt".format(image.id)), 'w') as f:
+        filename = os.path.join(working_path, "{}.txt".format(image.id))
+        with open(filename, 'w') as f:
             for annotation in annotations:
                 geometry = wkt.loads(annotation.location)
                 x, y, w, h = geometry_to_yolo(geometry, image.width, image.height)
                 for term_id in annotation.term:
                     # <object-class> <x_center> <y_center> <width> <height>
-                    f.write("{} {:.6f} {:.6f} {:.6f} {:.6f}".format(terms_indexes[term_id], x, y, w, h) + os.linesep)
+                    f.write("{} {:.12f} {:.12f} {:.12f} {:.12f}".format(terms_indexes[term_id], x, y, w, h) + os.linesep)
+        annotation_filenames.append(filename)
+
+    return classes_filename, image_filenames, annotation_filenames
