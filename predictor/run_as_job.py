@@ -29,12 +29,16 @@ def run(argv):
         cj.job.update(statusComment="Initialization...")
         id_project = cj.parameters.cytomine_id_project
         id_terms = cj.parameters.cytomine_id_terms
+        id_tags_for_images = cj.parameters.cytomine_id_tags_for_images
         working_path = cj.parameters.working_path
-        terms = TermCollection().fetch_with_filter("project", id_project)
 
+        terms = TermCollection().fetch_with_filter("project", id_project)
         if id_terms:
             filtered_term_ids = [int(id_term) for id_term in id_terms.split(',')]
-            filtered_terms = [term for term in terms if term.id in filtered_term_ids]
+            filtered_terms = TermCollection()
+            for term in terms:
+                if term.id in filtered_term_ids:
+                    filtered_terms.append(term)
         else:
             filtered_terms = terms
 
@@ -44,28 +48,27 @@ def run(argv):
             classes = f.readlines()
             indexes_terms = {}
             for i, _class in enumerate(classes):
+                _class = _class.strip()
                 indexes_terms[i] = filtered_terms.find_by_attribute("name", _class)
 
         cj.job.update(statusComment="Open model...", progress=1)
         # TODO...
 
         cj.job.update(statusComment="Predictions...", progress=5)
-        image_tags = cj.parameters.id_tags_for_images if cj.parameters.id_tags_for_images else None
-        images = ImageInstanceCollection(tags=image_tags).fetch_with_filter("project", cj.parameters.id_project)
-
+        images = ImageInstanceCollection(tags=id_tags_for_images).fetch_with_filter("project", id_project)
         for image in images:
             print("Prediction for image {}".format(image.instanceFilename))
             # TODO: get predictions from YOLO
             # TODO: I suppose here for the sake of the demo that the output format is the same as input, which is not sure
             sample_predictions = [
-                (1, 0.604000000000, 0.493846153846, 0.105600000000, 0.461538461538),
+                (0, 0.604000000000, 0.493846153846, 0.105600000000, 0.461538461538),
                 (0, 0.409200000000, 0.606153846154, 0.050400000000, 0.095384615385)
             ]
 
             ac = AnnotationCollection()
             for pred in sample_predictions:
                 _class, xcenter, ycenter, width, height = pred
-                term_ids = [indexes_terms[_class].id] if indexes_terms[_class] else None
+                term_ids = [indexes_terms[_class].id] if _class in indexes_terms.keys() else None
                 if term_ids is None:
                     print("No term found for class {}".format(_class))
                 geometry = yolo_to_geometry((xcenter, ycenter, width, height), image.width, image.height)

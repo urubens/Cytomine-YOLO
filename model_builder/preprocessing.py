@@ -68,7 +68,7 @@ def preprocess(cytomine, working_path, id_project, id_terms=None, id_tags_for_im
     # Download images
     image_filenames = []
     image_tags = id_tags_for_images if id_tags_for_images else None
-    images = ImageInstanceCollection(tags=image_tags).fetch_with_filter("project", id_project)[:20]
+    images = ImageInstanceCollection(tags=image_tags).fetch_with_filter("project", id_project)
     for image in images:
         image.dump(os.path.join(working_path, "{id}.png"), override=False)
         image_filenames.append(image.filename)

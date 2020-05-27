@@ -11,9 +11,9 @@ if __name__ == '__main__':
     parser.add_argument('--cytomine_public_key')
     parser.add_argument('--cytomine_private_key')
     parser.add_argument('--cytomine_id_project')
-    parser.add_argument('--cytomine_id_terms',
+    parser.add_argument('--cytomine_id_terms', default=None,
                         help="List of terms to use for dataset, separated by comma. If unset, all terms are used.")
-    parser.add_argument('--cytomine_id_tags_for_images',
+    parser.add_argument('--cytomine_id_tags_for_images', default=None,
                         help="List of tags (id), separated by comma, that images must have to be used in dataset. "
                              "If unset, all images in the project are used.")
     parser.add_argument('--working_path')
