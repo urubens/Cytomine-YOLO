@@ -3,9 +3,18 @@ import sys
 
 from cytomine import CytomineJob
 from cytomine.models import ImageInstanceCollection, TermCollection, AnnotationCollection, Annotation, Property
+from shapely.affinity import affine_transform
 from shapely.geometry import box
 
-from model_builder.preprocessing import CLASSES_FILENAME, change_referential
+CLASSES_FILENAME = "classes.names"
+IMG_DIRECTORY = "images"
+ANNOTATION_DIRECTORY = "labels"
+
+
+def change_referential(geometry, height):
+    matrix = [1, 0, 0, -1, 0, height]
+    return affine_transform(geometry, matrix)
+
 
 
 def yolo_to_geometry(geom, image_width, image_height):

@@ -3,7 +3,7 @@ from argparse import ArgumentParser
 
 from cytomine import Cytomine
 
-from model_builder.preprocessing import preprocess
+from preprocessing import preprocess
 
 if __name__ == '__main__':
     parser = ArgumentParser()

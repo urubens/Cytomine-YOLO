@@ -2,7 +2,7 @@ import sys
 
 from cytomine import CytomineJob
 
-from model_builder.preprocessing import preprocess
+from preprocessing import preprocess
 
 if __name__ == '__main__':
     params = sys.argv[1:]
