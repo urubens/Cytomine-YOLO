@@ -2,7 +2,7 @@ import os
 import sys
 
 from cytomine import CytomineJob
-from cytomine.models import ImageInstanceCollection, TermCollection, AnnotationCollection, Annotation
+from cytomine.models import ImageInstanceCollection, TermCollection, AnnotationCollection, Annotation, Property
 from shapely.geometry import box
 
 from model_builder.preprocessing import CLASSES_FILENAME, change_referential
@@ -60,19 +60,21 @@ def run(argv):
             print("Prediction for image {}".format(image.instanceFilename))
             # TODO: get predictions from YOLO
             # TODO: I suppose here for the sake of the demo that the output format is the same as input, which is not sure
+            # <class> <x_center> <y_center> <width> <height> <proba>
             sample_predictions = [
-                (0, 0.604000000000, 0.493846153846, 0.105600000000, 0.461538461538),
-                (0, 0.409200000000, 0.606153846154, 0.050400000000, 0.095384615385)
+                (0, 0.604000000000, 0.493846153846, 0.105600000000, 0.461538461538, 0.9),
+                (0, 0.409200000000, 0.606153846154, 0.050400000000, 0.095384615385, 0.5)
             ]
 
             ac = AnnotationCollection()
             for pred in sample_predictions:
-                _class, xcenter, ycenter, width, height = pred
+                _class, xcenter, ycenter, width, height, proba = pred
                 term_ids = [indexes_terms[_class].id] if _class in indexes_terms.keys() else None
                 if term_ids is None:
                     print("No term found for class {}".format(_class))
                 geometry = yolo_to_geometry((xcenter, ycenter, width, height), image.width, image.height)
-                ac.append(Annotation(id_image=image.id, id_terms=term_ids, location=geometry.wkt))
+                properties = [{"key": "probability", "value": proba}]
+                ac.append(Annotation(id_image=image.id, id_terms=term_ids, location=geometry.wkt, properties=properties))
 
             ac.save()
 
