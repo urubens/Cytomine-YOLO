@@ -5,7 +5,7 @@ The repository gives a starting point to work with YOLO in Cytomine.
 ## Model builder
 
 The model builder software is a toy software to demonstrate how to get data from Cytomine to train YOLO.
-It prepares data in YOLO format, following https://github.com/AlexeyAB/darknet#how-to-train-to-detect-your-custom-objects
+It prepares data in YOLO format, following https://github.com/eriklindernoren/PyTorch-YOLOv3#train-on-custom-dataset
 
 In a given directory, it
 * creates an `obj.names` with one class per line

@@ -3,7 +3,9 @@ from cytomine.models import TermCollection, ImageInstanceCollection, AnnotationC
 from shapely import wkt
 from shapely.affinity import affine_transform
 
-CLASSES_FILENAME = "obj.names"
+CLASSES_FILENAME = "classes.names"
+IMG_DIRECTORY = "images"
+ANNOTATION_DIRECTORY = "labels"
 
 
 def change_referential(geometry, height):
@@ -50,6 +52,14 @@ def preprocess(cytomine, working_path, id_project, id_terms=None, id_tags_for_im
     if not os.path.exists(working_path):
         os.makedirs(working_path)
 
+    images_path = os.path.join(working_path, IMG_DIRECTORY)
+    if not os.path.exists(images_path):
+        os.makedirs(images_path)
+
+    annotations_path = os.path.join(working_path, ANNOTATION_DIRECTORY)
+    if not os.path.exists(annotations_path):
+        os.makedirs(annotations_path)
+
     terms = TermCollection().fetch_with_filter("project", id_project)
     if id_terms:
         filtered_term_ids = [int(id_term) for id_term in id_terms.split(',')]
@@ -58,7 +68,7 @@ def preprocess(cytomine, working_path, id_project, id_terms=None, id_tags_for_im
         filtered_terms = terms
     terms_indexes = {term.id: i for i, term in enumerate(filtered_terms)}
 
-    # https://github.com/AlexeyAB/darknet#how-to-train-to-detect-your-custom-objects
+    # https://github.com/eriklindernoren/PyTorch-YOLOv3#train-on-custom-dataset
     # Write obj.names
     classes_filename = os.path.join(working_path, CLASSES_FILENAME)
     with open(classes_filename, 'w') as f:
@@ -70,7 +80,7 @@ def preprocess(cytomine, working_path, id_project, id_terms=None, id_tags_for_im
     image_tags = id_tags_for_images if id_tags_for_images else None
     images = ImageInstanceCollection(tags=image_tags).fetch_with_filter("project", id_project)
     for image in images:
-        image.dump(os.path.join(working_path, "{id}.png"), override=False)
+        image.dump(os.path.join(working_path, IMG_DIRECTORY, "{id}.png"), override=False)
         image_filenames.append(image.filename)
 
     # Create annotation files
@@ -83,7 +93,7 @@ def preprocess(cytomine, working_path, id_project, id_terms=None, id_tags_for_im
         annotations.showTerm = True
         annotations.fetch()
 
-        filename = os.path.join(working_path, "{}.txt".format(image.id))
+        filename = os.path.join(working_path, ANNOTATION_DIRECTORY, "{}.txt".format(image.id))
         with open(filename, 'w') as f:
             for annotation in annotations:
                 geometry = wkt.loads(annotation.location)
